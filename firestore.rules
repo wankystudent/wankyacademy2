@@ -1,0 +1,26 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Orders: Only backend (Cloud Functions) can read/write fully.
+    // Admin dashboard (authenticated) can read paid orders.
+    match /orders/{orderId} {
+      allow read: if request.auth != null && request.auth.token.email == "admin@wankyacademy.com";
+      allow write: if false; // Only Cloud Functions via Admin SDK can write
+    }
+    
+    // Certificates: Public read, Public create (for students to save their certs)
+    // Prevent updates or deletions to ensure integrity
+    match /certificates/{certId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

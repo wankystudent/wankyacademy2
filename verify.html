@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vérification Officielle – Wanky Academy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root { --navy: #003366; --gold: #FFD700; --green: #2ecc71; --red: #e74c3c; }
+    body { margin: 0; font-family: 'Poppins', sans-serif; background: #f8fafc; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+    .container { width: 100%; max-width: 450px; animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: #fff; border-radius: 32px; box-shadow: 0 30px 60px rgba(0,51,102,0.15); overflow: hidden; border-top: 8px solid var(--navy); text-align: center; }
+    .header { padding: 40px 30px 20px; }
+    .logo { width: 80px; height: 80px; margin: 0 auto 20px; background: var(--navy); border-radius: 20px; display: flex; align-items: center; justify-content: center; padding: 10px; }
+    .logo img { width: 100%; height: 100%; object-fit: contain; }
+    h1 { color: var(--navy); font-weight: 900; margin: 0; font-size: 24px; letter-spacing: -1px; }
+    p.subtitle { color: #64748b; font-size: 14px; margin-top: 5px; }
+    .input-group { padding: 0 30px 30px; margin-top: 20px; }
+    input { width: 100%; padding: 18px; border-radius: 20px; border: 2px solid #e2e8f0; font-size: 18px; outline: none; margin-bottom: 15px; text-align: center; font-family: 'Courier New', monospace; letter-spacing: 2px; font-weight: 700; box-sizing: border-box; transition: all 0.3s; }
+    input:focus { border-color: var(--navy); box-shadow: 0 0 0 5px rgba(0,51,102,0.1); }
+    button { width: 100%; padding: 18px; border: none; border-radius: 20px; font-size: 16px; font-weight: 700; background: var(--navy); color: #fff; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(0,51,102,0.2); }
+    button:hover { background: #002244; transform: translateY(-2px); box-shadow: 0 15px 30px rgba(0,51,102,0.3); }
+    .result { margin: 0 30px 30px; padding: 25px; border-radius: 24px; display: none; text-align: left; }
+    .success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
+    .badge-authorized { background: var(--green); color: white; }
+    .badge-disabled { background: var(--red); color: white; }
+    .footer { margin-top: 30px; text-align: center; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <div class="logo"><img src="https://i.postimg.cc/wTr99qNp/d-modern-logo-icon-for-Wanky-Academy-WA-1.png" alt="WA"></div>
+        <h1>WANKY ACADEMY</h1>
+        <p class="subtitle">Vérification officielle des accès</p>
+      </div>
+      <div class="input-group">
+        <input type="text" id="accessCode" placeholder="WA-INF-2025-XXXX" maxlength="18" />
+        <button id="verifyBtn">VÉRIFIER L'ACCÈS</button>
+      </div>
+      <div id="result" class="result"></div>
+    </div>
+    <div class="footer">Wanky Academy • 100% Hors-ligne / LocalStorage</div>
+  </div>
+  <script>
+    const btn = document.getElementById("verifyBtn");
+    const input = document.getElementById("accessCode");
+    const resultDiv = document.getElementById("result");
+    function verify() {
+      const code = input.value.trim().toUpperCase();
+      resultDiv.style.display = "none";
+      if (!code) return;
+      const db = JSON.parse(localStorage.getItem("WA_DATABASE") || "[]");
+      const user = db.find(u => u.accessCode === code || u.idNumber === code);
+      if (user) {
+        const isAuthorized = user.access !== false;
+        if (isAuthorized) {
+          resultDiv.className = "result success";
+          resultDiv.innerHTML = `
+            <div class="status-badge badge-authorized">ACCÈS VALIDE</div>
+            <div style="font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 5px;">${user.name}</div>
+            <div style="font-size: 13px; font-weight: 600; color: #64748b;">${user.course || 'Cours Digital'}</div>
+            <div style="margin-top: 15px; font-size: 10px; color: #94a3b8; border-top: 1px solid #dcfce7; padding-top: 10px; font-style: italic;">Vérifié le: ${new Date().toLocaleString()}</div>
+          `;
+        } else {
+          resultDiv.className = "result error";
+          resultDiv.innerHTML = `<div class="status-badge badge-disabled">ACCÈS RÉVOQUÉ</div><div style="font-size: 18px; font-weight: 700;">Compte Désactivé</div>`;
+        }
+      } else {
+        resultDiv.className = "result error";
+        resultDiv.innerHTML = `<div style="font-size: 18px; font-weight: 700;">❌ Code Non Trouvé</div>`;
+      }
+      resultDiv.style.display = "block";
+    }
+    btn.addEventListener("click", verify);
+    input.addEventListener("keypress", e => { if (e.key === "Enter") verify(); });
+  </script>
+</body>
+</html>
